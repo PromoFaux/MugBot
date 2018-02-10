@@ -11,8 +11,10 @@ namespace MugBot.Code
     {
         public MattermostConfig MmConfig { get; set; }
         public string Secret { get; set; }
+        public string CelebrationEmoji { get; set; }
+        public string CustomString { get; set; }
+
         public List<string> IgnoredUsers { get; set; }
-        public string NotifyUser { get; set; }
 
         public void Save(string path)
         {

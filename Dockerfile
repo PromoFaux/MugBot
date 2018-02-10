@@ -1,13 +1,20 @@
-# Stage 1
-FROM microsoft/aspnetcore-build:1.0-2.0 AS builder
-WORKDIR /source
-
-COPY . .
-RUN dotnet restore MugBot.sln
-RUN dotnet publish MugBot.sln -c Release -o /publish
-
-# Stage 2
-FROM microsoft/dotnet:2.0-runtime
+FROM microsoft/aspnetcore:2.0 AS base
 WORKDIR /app
-COPY --from=builder /publish .
+EXPOSE 80
+
+FROM microsoft/aspnetcore-build:2.0 AS build
+WORKDIR /src
+COPY *.sln ./
+COPY MugBot/MugBot.csproj MugBot/
+RUN dotnet restore
+COPY . .
+WORKDIR /src/MugBot
+RUN dotnet build -c Release -o /app
+
+FROM build AS publish
+RUN dotnet publish -c Release -o /app
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app .
 ENTRYPOINT ["dotnet", "MugBot.dll"]

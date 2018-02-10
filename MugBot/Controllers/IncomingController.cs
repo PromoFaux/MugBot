@@ -98,7 +98,15 @@ namespace MugBot.Controllers
                                 {
                                     var usrMd = $"[{user}]({pr.pull_request.user.html_url})";
 
-                                    message.Text = $":celebrate: A User has had a pull request merged for the first time! :celebrate:\n\nUser: {usrMd}\nPull: {pr.pull_request.html_url}\n\n @{_config.NotifyUser} - Send them a mug please!";
+                                    if (_config.CelebrationEmoji != null) message.Text += $"{_config.CelebrationEmoji} ";
+
+                                    message.Text += $"A User has had a pull request merged for the first time!";
+
+                                    if (_config.CelebrationEmoji != null) message.Text += $" {_config.CelebrationEmoji}";
+
+                                    message.Text += $"\n\nUser: {usrMd}\nPull: {pr.pull_request.html_url}";
+
+                                    if (_config.CustomString != null) message.Text += $"\n\n {_config.CustomString}";
 
                                     response = await _matterhook.PostAsync(message);
 
