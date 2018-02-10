@@ -135,7 +135,6 @@ namespace MugBot.Controllers
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                throw;
             }
 
             return StatusCode(200, "Ignored");
