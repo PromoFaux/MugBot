@@ -4,6 +4,8 @@ This is a single-purpose bot used to notify a channel on Mattermost that a user 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a4cd88f8a39d4268bf9dd2db1c25f92f)](https://www.codacy.com/app/promofaux/MugBot?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=PromoFaux/MugBot&amp;utm_campaign=Badge_Grade)
 [![Docker Build Status](https://img.shields.io/docker/build/promofaux/mugbot.svg)](https://hub.docker.com/r/promofaux/mugbot/builds/) [![Docker Stars](https://img.shields.io/docker/stars/promofaux/mugbot.svg)](https://hub.docker.com/r/promofaux/mugbot/) [![Docker Pulls](https://img.shields.io/docker/pulls/promofaux/mugbot.svg)](https://hub.docker.com/r/promofaux/mugbot/) 
 
+![](https://i.imgur.com/AC4iYjv.gif)
+
 ## Deployment
 Recommended - Use pre-built container:
 - Create a directory to store the bot's config file, e.g `/opt/bot/mugbot` (`${YOUR_DIRECTORY}`)
