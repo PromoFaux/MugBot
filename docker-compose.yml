@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  mugbot:
+    image: mugbot
+    container_name: mugbot
+    ports:
+      - 8080:80
+    volumes:
+      - ./config:/config
+    build:
+      context: ./MugBot
+      dockerfile: Dockerfile
