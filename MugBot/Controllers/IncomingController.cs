@@ -96,6 +96,8 @@ namespace MugBot.Controllers
 
                                 if (!_config.IgnoredUsers.Contains(user))
                                 {
+                                    message.Text += "#users-first-contribution\n";
+
                                     var usrMd = $"[{user}]({pr.pull_request.user.html_url})";
 
                                     if (_config.CelebrationEmoji != null) message.Text += $"{_config.CelebrationEmoji} ";
