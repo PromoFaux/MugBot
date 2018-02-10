@@ -22,6 +22,8 @@ docker run -d --restart=always \
 
 (There are probably better ways to do the user bit, but I'm a novice at Docker - any hints welcomed!)
 
+On the Github side of things, add a webhook to your repository with a `Content Type` of `application/json`, then choose the `Let me select individual events` radio button, and make sure that only `Pull request` is ticked.
+
 
 ## Configuration
 
