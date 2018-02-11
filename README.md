@@ -14,13 +14,10 @@ Recommended - Use pre-built container:
 ```BASH
 docker run -d --restart=always \
            -v ${YOUR_DIRECTORY}:/config/ \
-           -p ${YOUR_PORT}:80 --name mugbot \
-           -u `id -u ${USER}`:`id -g ${USER}`\
+           -p ${YOUR_PORT}:8080 --name mugbot \           
            promofaux/mugbot:latest
 ```
 `${YOUR_PORT}` is the port your bot will be listening on
-
-(There are probably better ways to do the user bit, but I'm a novice at Docker - any hints welcomed!)
 
 On the Github side of things, add a webhook to your repository with a `Content Type` of `application/json`, then choose the `Let me select individual events` radio button, and make sure that only `Pull request` is ticked.
 
