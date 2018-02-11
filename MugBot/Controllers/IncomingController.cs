@@ -37,6 +37,7 @@ namespace MugBot.Controllers
         [HttpPost("")]
         public async Task<IActionResult> Receive()
         {
+            
             var stuffToLog = new List<string>();
             _matterhook = new MatterhookClient(_config.MmConfig.WebhookUrl);
             try
