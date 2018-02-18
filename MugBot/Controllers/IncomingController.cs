@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
+using GithubWebhook.Events;
 using Matterhook.NET.MatterhookClient;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using MugBot.Code;
-using MugBot.GithubSpec;
+using Config = MugBot.Code.Config;
 
 namespace MugBot.Controllers
 {
@@ -37,45 +32,21 @@ namespace MugBot.Controllers
         [HttpPost("")]
         public async Task<IActionResult> Receive()
         {
-            
-            var stuffToLog = new List<string>();
             _matterhook = new MatterhookClient(_config.MmConfig.WebhookUrl);
             try
             {
-                string payloadText;
-
-                //Generate GithubHook Object
-                stuffToLog.Add($"Github Hook received: {DateTime.Now}");
-
-                Request.Headers.TryGetValue("X-GitHub-Event", out var strEvent);
-                Request.Headers.TryGetValue("X-Hub-Signature", out var signature);
-                Request.Headers.TryGetValue("X-GitHub-Delivery", out var delivery);
-                Request.Headers.TryGetValue("Content-type", out var content);
-
-                stuffToLog.Add($"Hook Id: {delivery}");
-                stuffToLog.Add($"X-Github-Event: {strEvent}");
-
-                if (content != "application/json")
+                GithubWebhook.GithubWebhook hook;
+                try
                 {
-                    const string error = "Invalid content type. Expected application/json";
-                    stuffToLog.Add(error);
-                    Util.LogList(stuffToLog);
-                    return StatusCode(400, error);
-
+                    hook = new GithubWebhook.GithubWebhook(Request);
+                }
+                catch (Exception e)
+                {
+                    return StatusCode(400, e.Message);
                 }
 
-                using (var reader = new StreamReader(Request.Body, Encoding.UTF8))
+                if (hook.SignatureValid(_config.Secret))
                 {
-                    payloadText = await reader.ReadToEndAsync().ConfigureAwait(false);
-                }
-
-                var calcSig = Util.CalculateSignature(payloadText, signature, _config.Secret, "sha1=");
-
-                if (signature == calcSig)
-                {
-                    var githubHook = new GithubHook(strEvent, signature, delivery, payloadText);
-                    HttpResponseMessage response = null;
-
                     var message = new MattermostMessage
                     {
                         Channel = _config.MmConfig.Channel,
@@ -83,57 +54,74 @@ namespace MugBot.Controllers
                         IconUrl = _config.MmConfig.IconUrl != null ? new Uri(_config.MmConfig.IconUrl) : null
                     };
 
-                    if (githubHook.Event == "pull_request")
+                    switch (hook.Event)
                     {
-                        var pr = (PullRequestEvent) githubHook.Payload;
-
-                        if (pr.action == "closed")
-                        {
-                            if (pr.pull_request.merged)
+                        case PullRequestEvent.EventString:
                             {
-                                var user = pr.pull_request.user.login;
+                                var pr = (PullRequestEvent)hook.PayloadObject;
 
-                                if (_config.IgnoredUsers == null) _config.IgnoredUsers = new List<string>();
-
-                                if (!_config.IgnoredUsers.Contains(user))
+                                if (pr.Action == "closed")
                                 {
-                                    message.Text += "#users-first-contribution\n";
-
-                                    var usrMd = $"[{user}]({pr.pull_request.user.html_url})";
-
-                                    if (_config.CelebrationEmoji != null) message.Text += $"{_config.CelebrationEmoji} ";
-
-                                    message.Text += $"A User has had a pull request merged for the first time!";
-
-                                    if (_config.CelebrationEmoji != null) message.Text += $" {_config.CelebrationEmoji}";
-
-                                    message.Text += $"\n\nUser: {usrMd}\nPull: {pr.pull_request.html_url}";
-
-                                    if (_config.CustomString != null) message.Text += $"\n\n {_config.CustomString}";
-
-                                    response = await _matterhook.PostAsync(message);
-
-                                    if (response == null || response.StatusCode != HttpStatusCode.OK)
+                                    if (pr.PullRequest.Merged != null && (bool)pr.PullRequest.Merged)
                                     {
-                                        return StatusCode(500, response != null
-                                            ? $"Unable to post to Mattermost: {response.StatusCode}"
-                                            : "Unable to post to Mattermost");
-                                    }
+                                        var user = pr.PullRequest.User.Login;
 
-                                    _config.IgnoredUsers.Add(user);
-                                    _config.Save("/config/config.json");
-                                    
-                                    return StatusCode(200, "Succesfully posted to Mattermost");
+                                        if (_config.IgnoredUsers == null) _config.IgnoredUsers = new List<string>();
+
+                                        if (_config.IgnoredUsers.Contains(user))
+                                        {
+                                            return StatusCode(200, $"{user} is already in my list!");
+                                        }
+
+                                        message.Text += "#users-first-contribution\n";
+
+                                        var usrMd = $"[{user}]({pr.PullRequest.User.HtmlUrl})";
+
+                                        if (_config.CelebrationEmoji != null)
+                                            message.Text += $"{_config.CelebrationEmoji} ";
+
+                                        message.Text += $"A User has had a pull request merged for the first time!";
+
+                                        if (_config.CelebrationEmoji != null)
+                                            message.Text += $" {_config.CelebrationEmoji}";
+
+                                        message.Text += $"\n\nUser: {usrMd}\nPull: {pr.PullRequest.HtmlUrl}";
+
+                                        if (_config.CustomString != null)
+                                            message.Text += $"\n\n {_config.CustomString}";
+
+                                        var response = await _matterhook.PostAsync(message);
+
+                                        if (response == null || response.StatusCode != HttpStatusCode.OK)
+                                            return StatusCode(500, response != null
+                                                ? $"Unable to post to Mattermost: {response.StatusCode}"
+                                                : "Unable to post to Mattermost");
+
+                                        _config.IgnoredUsers.Add(user);
+                                        _config.Save("/config/config.json");
+
+                                        return StatusCode(200, "Succesfully posted to Mattermost");
+                                    }
                                 }
                                 else
                                 {
-                                    return StatusCode(200, "This User has already contributed");
+                                    return StatusCode(200, $"{pr.Action} actions ignored by this bot");
                                 }
-                                
+
+                                break;
                             }
-                        }
+                        case PingEvent.EventString:
+                            return StatusCode(200, "Pong!");
+                        default:
+                            return StatusCode(501, $"{hook.Event} is not a valid event for this bot!");
                     }
                 }
+                else
+                {
+                    return StatusCode(400, $"Signature Invalid. Expected: {hook.GetExpectedSignature(_config.Secret)}");
+                }
+
+
             }
             catch (Exception e)
             {
@@ -144,5 +132,3 @@ namespace MugBot.Controllers
         }
     }
 }
-
-

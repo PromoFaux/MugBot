@@ -5,9 +5,9 @@ services:
     image: mugbot
     container_name: mugbot
     ports:
-      - 8080:80
+      - 8080:8080
     volumes:
       - ./config:/config
     build:
-      context: ./MugBot
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: MugBot/Dockerfile

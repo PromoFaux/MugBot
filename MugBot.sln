@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MugBot", "MugBot\MugBot.csproj", "{77C069C5-2CD3-42B3-AE4A-8D27A8CF3304}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MugBot", "MugBot\MugBot.csproj", "{77C069C5-2CD3-42B3-AE4A-8D27A8CF3304}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{F905FEA0-FBAC-452D-BC47-45E84DBC2ED5}"
 EndProject
