@@ -16,15 +16,41 @@ namespace MugBot.Code
 
         public List<string> IgnoredUsers { get; set; }
 
+        public List<IgnoredUser> IgnoredUsers_Detailed { get; set; }
+
         public void Save(string path)
         {
             // serialize JSON directly to a file
             using (var file = File.CreateText(path))
             {
-                var serializer = new JsonSerializer { Formatting = Formatting.Indented };
+                var serializer = new JsonSerializer { Formatting = Formatting.Indented, NullValueHandling = NullValueHandling.Ignore };
                 serializer.Serialize(file, this);
             }
         }
+
+        public void ConvertIgnoredUsers()
+        {
+            if (IgnoredUsers.Any())
+            {
+                IgnoredUsers_Detailed = new List<IgnoredUser>();
+                foreach (var user in IgnoredUsers)
+                {
+                    IgnoredUsers_Detailed.Add(new IgnoredUser
+                    {
+                        UserName = user
+                    });
+                }
+            }
+
+            IgnoredUsers = null;
+            Save("/config/config.json");
+        }
+    }
+
+    public class IgnoredUser
+    {
+        public string UserName { get; set; }
+        public string PullRequestUrl { get; set; }
     }
 
     public class MattermostConfig
