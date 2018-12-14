@@ -134,15 +134,23 @@ namespace MugBot.Controllers
         {
             if (incoming.token != _config.SlashToken || string.IsNullOrEmpty(_config.SlashToken))
             {
+                return Json(new
+                {
+                    icon_url = _config.MmConfig.IconUrl,
+                    text = "slashToken is not set up!"
+                });
+            }
+            else
+            {
                 var rtnTxt = "";
-                
+
                 if (_config.IgnoredUsers_Detailed.Count > 0)
                 {
                     rtnTxt = "| User | Url |\n|:---|:---|\n";
-                    foreach (var user in _config.IgnoredUsers_Detailed.OrderBy(x=>x.UserName))
+                    foreach (var user in _config.IgnoredUsers_Detailed.OrderBy(x => x.UserName))
                     {
                         rtnTxt += $"|{user.UserName}|{user.PullRequestUrl}|\n";
-                    }             
+                    }
                 }
                 else
                 {
@@ -156,12 +164,6 @@ namespace MugBot.Controllers
                     text = rtnTxt
                 });
             }
-
-            return Json(new
-            {
-                icon_url = _config.MmConfig.IconUrl,
-                text = "slashToken is not set up!"
-            });
         }
 
         public class SlashCommand
