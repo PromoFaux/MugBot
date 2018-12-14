@@ -22,6 +22,7 @@ namespace MugBot.Controllers
             try
             {
                 _config = config.Value;
+                _config.ConvertIgnoredUsers();
             }
             catch (Exception e)
             {
@@ -65,12 +66,15 @@ namespace MugBot.Controllers
                                 {
                                     var user = pr.PullRequest.User.Login;
 
-                                    if (_config.IgnoredUsers == null) _config.IgnoredUsers = new List<string>();
-
-                                    if (_config.IgnoredUsers.Contains(user))
+                                    if (_config.IgnoredUsers_Detailed == null)
+                                    {
+                                        _config.IgnoredUsers_Detailed = new List<Code.IgnoredUser>();
+                                    }
+                                    
+                                    if (_config.IgnoredUsers_Detailed.Exists(x=>x.UserName == user))
                                     {
                                         return StatusCode(200, $"{user} is already in my list!");
-                                    }
+                                    }                                    
 
                                     message.Text += "#users-first-contribution\n";
 
@@ -96,7 +100,7 @@ namespace MugBot.Controllers
                                             ? $"Unable to post to Mattermost: {response.StatusCode}"
                                             : "Unable to post to Mattermost");
 
-                                    _config.IgnoredUsers.Add(user);
+                                    _config.IgnoredUsers_Detailed.Add(new Code.IgnoredUser { UserName = user, PullRequestUrl = pr.PullRequest.HtmlUrl });                                    
                                     _config.Save("/config/config.json");
 
                                     return StatusCode(200, "Succesfully posted to Mattermost");
@@ -111,8 +115,8 @@ namespace MugBot.Controllers
                         }
                     case PingEvent.EventString:
                         return StatusCode(200, "Pong!");
-                    default:
-                        return StatusCode(501, $"{hook.Event} is not a valid event for this bot!");
+                    default:                        
+                        return StatusCode(200, $"{hook.Event} is not a valid event for this bot!");
                 }
 
             }
