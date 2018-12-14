@@ -12,8 +12,7 @@ after_success:
     docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
     docker tag promofaux/mugbot promofaux/mugbot:development;
     docker push promofaux/mugbot:development;
-    fi
-    if [ "$TRAVIS_BRANCH" == "master" ]; then
+    elif [ "$TRAVIS_BRANCH" == "master" ]; then
     docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
     docker tag promofaux/mugbot:latest promofaux/mugbot:latest;
     docker push promofaux/mugbot:latest;
