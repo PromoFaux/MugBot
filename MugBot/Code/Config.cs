@@ -27,6 +27,12 @@ namespace MugBot.Code
         }
     }
 
+    public class IgnoredUser
+    {
+        public string UserName { get; set; }
+        public string PullRequestUrl { get; set; }
+    }
+
     public class MattermostConfig
     {
         public string WebhookUrl { get; set; }
