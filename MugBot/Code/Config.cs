@@ -13,6 +13,7 @@ namespace MugBot.Code
         public string Secret { get; set; }
         public string CelebrationEmoji { get; set; }
         public string CustomString { get; set; }
+        public string SlashToken { get; set; }
 
         public List<string> IgnoredUsers { get; set; }
 

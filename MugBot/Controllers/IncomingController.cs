@@ -8,6 +8,7 @@ using Matterhook.NET.MatterhookClient;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Config = MugBot.Code.Config;
+using System.Linq;
 
 namespace MugBot.Controllers
 {
@@ -70,11 +71,11 @@ namespace MugBot.Controllers
                                     {
                                         _config.IgnoredUsers_Detailed = new List<Code.IgnoredUser>();
                                     }
-                                    
-                                    if (_config.IgnoredUsers_Detailed.Exists(x=>x.UserName == user))
+
+                                    if (_config.IgnoredUsers_Detailed.Exists(x => x.UserName == user))
                                     {
                                         return StatusCode(200, $"{user} is already in my list!");
-                                    }                                    
+                                    }
 
                                     message.Text += "#users-first-contribution\n";
 
@@ -100,7 +101,7 @@ namespace MugBot.Controllers
                                             ? $"Unable to post to Mattermost: {response.StatusCode}"
                                             : "Unable to post to Mattermost");
 
-                                    _config.IgnoredUsers_Detailed.Add(new Code.IgnoredUser { UserName = user, PullRequestUrl = pr.PullRequest.HtmlUrl });                                    
+                                    _config.IgnoredUsers_Detailed.Add(new Code.IgnoredUser { UserName = user, PullRequestUrl = pr.PullRequest.HtmlUrl });
                                     _config.Save("/config/config.json");
 
                                     return StatusCode(200, "Succesfully posted to Mattermost");
@@ -115,7 +116,7 @@ namespace MugBot.Controllers
                         }
                     case PingEvent.EventString:
                         return StatusCode(200, "Pong!");
-                    default:                        
+                    default:
                         return StatusCode(200, $"{hook.Event} is not a valid event for this bot!");
                 }
 
@@ -127,5 +128,57 @@ namespace MugBot.Controllers
 
             return StatusCode(200, "Ignored"); //This is where it's falling out
         }
+
+        [Route("ContributorList")]
+        public ActionResult GetContributorList(SlashCommand incoming)
+        {
+            if (incoming.token != _config.SlashToken || string.IsNullOrEmpty(_config.SlashToken))
+            {
+                var rtnTxt = "";
+                
+                if (_config.IgnoredUsers_Detailed.Count > 0)
+                {
+                    rtnTxt = "| User | Url |\n|:---|:---|\n";
+                    foreach (var user in _config.IgnoredUsers_Detailed.OrderBy(x=>x.UserName))
+                    {
+                        rtnTxt += $"|{user.UserName}|{user.PullRequestUrl}|\n";
+                    }             
+                }
+                else
+                {
+                    rtnTxt = "No contributions counted yet!";
+                }
+
+                return Json(new
+                {
+                    response_type = "in_channel",
+                    icon_url = _config.MmConfig.IconUrl,
+                    text = rtnTxt
+                });
+            }
+
+            return Json(new
+            {
+                icon_url = _config.MmConfig.IconUrl,
+                text = "slashToken is not set up!"
+            });
+        }
+
+        public class SlashCommand
+        {
+            public string channel_id { get; set; }
+            public string channel_name { get; set; }
+            public string command { get; set; }
+            public string response_url { get; set; }
+            public string team_domain { get; set; }
+            public string team_id { get; set; }
+            public string text { get; set; }
+            public string token { get; set; }
+            public string user_id { get; set; }
+            public string user_name { get; set; }
+        }
+
     }
+
+
 }
