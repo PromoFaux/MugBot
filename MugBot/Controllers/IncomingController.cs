@@ -153,7 +153,7 @@ namespace MugBot.Controllers
                     rtnTxt = "| User | Url | Date |\n|:---|:---|:---|\n";
                     foreach (var user in _config.IgnoredUsers_Detailed)
                     {
-                        rtnTxt += $"|{user.UserName}|{user.PullRequestUrl}|{user.ContributionDate}\n";
+                        rtnTxt += $"|{user.UserName}|{user.PullRequestUrl}|{user.ContributionDate}|\n";
                     }
                 }
                 else
