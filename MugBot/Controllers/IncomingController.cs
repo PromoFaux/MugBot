@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Config = MugBot.Code.Config;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace MugBot.Controllers
 {
@@ -101,7 +102,10 @@ namespace MugBot.Controllers
                                             ? $"Unable to post to Mattermost: {response.StatusCode}"
                                             : "Unable to post to Mattermost");
 
-                                    _config.IgnoredUsers_Detailed.Add(new Code.IgnoredUser { UserName = user, PullRequestUrl = pr.PullRequest.HtmlUrl });
+                                    _config.IgnoredUsers_Detailed.Add(new Code.IgnoredUser { UserName = user,
+                                                                                             PullRequestUrl = pr.PullRequest.HtmlUrl,
+                                                                                             ContributionDate = $"{pr.PullRequest.ClosedAt:dd MMMM yyyy HH:mm:ss}"
+                                                                                           });
                                     _config.Save("/config/config.json");
 
                                     return StatusCode(200, "Succesfully posted to Mattermost");
@@ -146,10 +150,10 @@ namespace MugBot.Controllers
 
                 if (_config.IgnoredUsers_Detailed.Count > 0)
                 {
-                    rtnTxt = "| User | Url |\n|:---|:---|\n";
-                    foreach (var user in _config.IgnoredUsers_Detailed.OrderBy(x => x.UserName))
+                    rtnTxt = "| User | Url | Date |\n|:---|:---|:---|\n";
+                    foreach (var user in _config.IgnoredUsers_Detailed)
                     {
-                        rtnTxt += $"|{user.UserName}|{user.PullRequestUrl}|\n";
+                        rtnTxt += $"|{user.UserName}|{user.PullRequestUrl}|{user.ContributionDate}\n";
                     }
                 }
                 else

@@ -52,6 +52,7 @@ namespace MugBot.Code
     {
         public string UserName { get; set; }
         public string PullRequestUrl { get; set; }
+        public string ContributionDate { get; set; }
     }
 
     public class MattermostConfig
